@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
@@ -91,7 +93,8 @@ class _BookingsPageState extends State<BookingsPage> {
     Colors.white,
     Colors.white
   ];
-
+  final timeout = const Duration(seconds: 60);
+  final ms = const Duration(milliseconds: 1);
 
 
   daytimeFunc(int _day, int _mon, int _year) {
@@ -435,14 +438,98 @@ class _BookingsPageState extends State<BookingsPage> {
     }
   }
 
+
+  _startTimer([int milliseconds]) async{
+      var duration = milliseconds == null ? timeout : ms * milliseconds;
+      return new Timer(duration, _sessionTimeout);
+  }
+
+  _sessionTimeout() async {
+    int pday = day;
+    for(int i =0;i<indexlist.length;i++){
+      if(sessionList[i] == "Night"){
+        nig[indexlist[i]] = Colors.white;
+      }
+      else if(sessionList[i] == "Morning"){
+        mor[indexlist[i]] = Colors.white;
+      }
+      else if(sessionList[i] == "Afternoon"){
+        aft[indexlist[i]] = Colors.white;
+      }
+      else {
+        eve[indexlist[i]] = Colors.white;
+      }
+    }
+    setState(() {
+    });
+    showDialog(context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context){
+          return AlertDialog(
+            content: Container(height: MediaQuery.of(context).size.height/6,
+              child: Column(crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Text("Session Timed Out",
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: MediaQuery.of(context).size.width/20
+                    ),),
+                  Center(
+                    child: Text("All your selected slots will be unblocked!",
+                      style: TextStyle(
+                          fontSize: MediaQuery.of(context).size.width/25
+                      ),),
+                  ),
+                  Padding(
+                    padding:  EdgeInsets.only(top: MediaQuery.of(context).size.height/70),
+                    child: RaisedButton(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15.0)),
+                        color: Colors.cyan[600],
+                        child: Text(
+                          'OK',
+                          style: TextStyle(
+                              fontSize: MediaQuery.of(context).size.width / 20,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700),
+                        ),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _startTimer();
+                        }),
+                  )
+                ],
+              ),
+            ),
+          );
+        });
+    for (int i = 0;
+    i < indexlist.length;
+    i++) {
+      await FirebaseDatabase.instance
+          .reference()
+          .child("Bookings")
+          .child(venue.id.toString())
+          .child(pday.toString())
+          .child(sessionList[i])
+          .child((indexlist[i] + 1)
+          .toString())
+          .update({
+        "Status": "NB",
+      });
+    }
+    indexlist.clear();
+    sessionList.clear();
+    slots.clear();
+  }
+
   @override
   void initState() {
     super.initState();
     _resetDate();
     _setSession();
     _setSlot();
-    day = DateTime.now().day;
-    print(session);
+    _startTimer();
   }
 
   @override
@@ -763,6 +850,7 @@ class _BookingsPageState extends State<BookingsPage> {
                                               Navigator.pop(context);
                                               indexlist.clear();
                                               sessionList.clear();
+                                              slots.clear();
                                             },
                                             child: Padding(
                                               padding: EdgeInsets.symmetric(
