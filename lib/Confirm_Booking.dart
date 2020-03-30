@@ -455,13 +455,13 @@ class _ConfirmBookState extends State<ConfirmBook> {
     });
     int userCount;
     await FirebaseDatabase.instance.reference().child("Users").child(user.uid)
-        .child("Bookings").child(venue.id.toString()).child(mon).child("1").once().then((DataSnapshot snapshot){
+        .child("Bookings").child(mon).child("1").once().then((DataSnapshot snapshot){
        userCount = snapshot.value['Count'];
     }).catchError((e){
       userCount = 0;
     });
     FirebaseDatabase.instance.reference().child("Users").child(user.uid)
-        .child("Bookings").child(venue.id.toString()).child(mon).child((userCount + 1).toString()).update({
+        .child("Bookings").child(mon).child((userCount + 1).toString()).update({
       "Name" : user.name,
       "Slots" : _slotTimings(),
       "BookingId" : txnRef,
@@ -469,9 +469,10 @@ class _ConfirmBookState extends State<ConfirmBook> {
       "DateCount" : dateCount,
       "Date" : day + "-" + mon + "-" + yr,
       "Cost" : _cost(),
+      "VenueName" : venue.name
     });
     FirebaseDatabase.instance.reference().child("Users").child(user.uid)
-        .child("Bookings").child(venue.id.toString()).child(mon).child("1").update({
+        .child("Bookings").child(mon).child("1").update({
       "Count" : userCount + 1,
     });
     int venueBookingCount;
