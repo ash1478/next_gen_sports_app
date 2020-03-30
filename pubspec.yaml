@@ -35,6 +35,7 @@ dependencies:
   fluttertoast:
   upi_india: ^1.1.1
   google_sign_in:
+  grouped_buttons:
 
 
 dev_dependencies:
