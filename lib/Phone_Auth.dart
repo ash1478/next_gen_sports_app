@@ -131,7 +131,6 @@ class _PhoneAuthState extends State<PhoneAuth> {
                     lastDate: DateTime(DateTime.now().year + 10))
                     .then((value) {
                   convDate = new DateFormat("dd/MM/yyyy").format(value);
-                  date= new TextEditingController(text: convDate);
 
                 });
                 setState(() {});
@@ -139,6 +138,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
               child: Icon(Icons.calendar_today, color: Colors.grey[250], size: MediaQuery.of(context).size.width/20),
 
             ),
+
             labelText: 'Date of Birth',
             hintText: 'Click on the calendar icon',
             labelStyle: TextStyle(color: Colors.grey[600], fontFamily: 'OpenSans', fontSize: MediaQuery.of(context).size.width/30, fontWeight: FontWeight.bold),

@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:latlong/latlong.dart';
 import 'package:next_gen_sports_app/Booking.dart';
 import 'package:next_gen_sports_app/HomePage.dart';
+import 'package:next_gen_sports_app/Phone_Auth.dart';
 import 'package:next_gen_sports_app/UserDetails.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:splashscreen/splashscreen.dart';
@@ -62,7 +63,7 @@ class _SplashState extends State<Splash> {
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Login()));
       });
       //await _getMarkers();
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage(user)));
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => PhoneAuth()));
 
     }
     else {
