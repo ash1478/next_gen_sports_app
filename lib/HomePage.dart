@@ -8,6 +8,7 @@ import 'package:latlong/latlong.dart';
 import 'package:next_gen_sports_app/Booking.dart';
 import 'package:next_gen_sports_app/Booking_History.dart';
 import 'package:next_gen_sports_app/BookingsPage.dart';
+import 'package:next_gen_sports_app/Profile_Page.dart';
 import 'package:next_gen_sports_app/UserDetails.dart';
 import 'package:next_gen_sports_app/VenueDetails.dart';
 
@@ -288,6 +289,9 @@ _HomePageState(this.user);
         onTap: (index){
           if(index == 0){
             Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>BookingHistory(user,monthCount)));
+          }
+          else if(index == 2){
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>Profile(user)));
           }
         },
       ),

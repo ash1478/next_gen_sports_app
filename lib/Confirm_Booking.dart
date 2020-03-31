@@ -34,6 +34,30 @@ class _ConfirmBookState extends State<ConfirmBook> {
   String resCode;
 
   int dateCount;
+
+
+  Future<bool> _backPressed()
+  {
+    return showDialog(context: context,
+        builder: (context)=>AlertDialog(
+
+          title: Text("Do you want to cancel the booking?"),
+          actions: <Widget>[
+            FlatButton(
+              child: Text("No"),
+              onPressed: (){
+                Navigator.pop(context,false);
+              },
+            ),
+            FlatButton(
+                child: Text("Yes"),
+                onPressed: _removeSlot
+            ),
+          ],
+        )
+    );
+
+  }
    RandomString(int strlen) {
     Random rnd = new Random(new DateTime.now().millisecondsSinceEpoch);
     String result = "";
@@ -114,267 +138,270 @@ class _ConfirmBookState extends State<ConfirmBook> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
+    return WillPopScope(
+      onWillPop: _backPressed,
+      child: Scaffold(
         backgroundColor: Colors.white,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            Text(
-              'Confirm Booking',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: MediaQuery.of(context).size.width / 20,
-              ),
-            ),
-          ],
-        ),
-        iconTheme: IconThemeData(color: Colors.black),
-        centerTitle: true,
-        elevation: 0.0,
-        automaticallyImplyLeading: true,
-      ),
-      body: ListView(
-        children: <Widget>[ Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            _texts("Name", user.name),
-            _div(Colors.grey),
-            _texts(
-                "Date Of Match",
-                day +
-                    "-" +
-                    mon +
-                    "-" +
-                    yr),
-            _div(Colors.grey),
-            _texts("Match Timing", _slotTimings()),
-            _div(Colors.grey),
-            _texts("Venue", "Next Gen Sports Academy"),
-            _div(Colors.grey),
-            _texts("Cost", _cost().toString()),
-            _div(Colors.grey),
-            Padding(
-              padding:
-                  EdgeInsets.only(top: MediaQuery.of(context).size.height / 50),
-              child: GestureDetector(
-                child: Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: Container(
-                          height: MediaQuery.of(context).size.width / 8,
-                          width: MediaQuery.of(context).size.width / 2,
-                          decoration: BoxDecoration(
-                            color: Colors.cyan[600],
-                            //borderRadius: BorderRadius.circular(10.0),
-                          ),
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: MediaQuery.of(context).size.width / 20,
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: <Widget>[
-                                Text(
-                                  'Pay Now',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize:
-                                          MediaQuery.of(context).size.width / 20,
-                                      color: Colors.white),
-                                ),
-                                (!pDrop)
-                                    ? GestureDetector(
-                                        onTap: () {
-                                          pDrop = !pDrop;
-                                          setState(() {});
-                                        },
-                                        child: Icon(
-                                          Icons.arrow_drop_down,
-                                          size:
-                                              MediaQuery.of(context).size.width /
-                                                  10,
-                                          color: Colors.white,
-                                        ))
-                                    : GestureDetector(
-                                        onTap: () {
-                                          pDrop = !pDrop;
-                                          setState(() {});
-                                        },
-                                        child: Icon(
-                                          Icons.arrow_drop_up,
-                                          size:
-                                              MediaQuery.of(context).size.width /
-                                                  10,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                              ],
-                            ),
-                          )),
-                    ),
-                  ],
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                'Confirm Booking',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: MediaQuery.of(context).size.width / 20,
                 ),
               ),
-            ),
-            (pDrop)
-                ? Container(
-                    color: Colors.cyan[600],
-                    //height: MediaQuery.of(context).size.height/4,
-                    child: Padding(
-                      padding:  EdgeInsets.symmetric(
-                        vertical: MediaQuery.of(context).size.height/70,
-                        horizontal: MediaQuery.of(context).size.width/20
+            ],
+          ),
+          iconTheme: IconThemeData(color: Colors.black),
+          centerTitle: true,
+          elevation: 0.0,
+          automaticallyImplyLeading: true,
+        ),
+        body: ListView(
+          children: <Widget>[ Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              _texts("Name", user.name),
+              _div(Colors.grey),
+              _texts(
+                  "Date Of Match",
+                  day +
+                      "-" +
+                      mon +
+                      "-" +
+                      yr),
+              _div(Colors.grey),
+              _texts("Match Timing", _slotTimings()),
+              _div(Colors.grey),
+              _texts("Venue", "Next Gen Sports Academy"),
+              _div(Colors.grey),
+              _texts("Cost", _cost().toString()),
+              _div(Colors.grey),
+              Padding(
+                padding:
+                    EdgeInsets.only(top: MediaQuery.of(context).size.height / 50),
+                child: GestureDetector(
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: Container(
+                            height: MediaQuery.of(context).size.width / 8,
+                            width: MediaQuery.of(context).size.width / 2,
+                            decoration: BoxDecoration(
+                              color: Colors.cyan[600],
+                              //borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: MediaQuery.of(context).size.width / 20,
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  Text(
+                                    'Pay Now',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize:
+                                            MediaQuery.of(context).size.width / 20,
+                                        color: Colors.white),
+                                  ),
+                                  (!pDrop)
+                                      ? GestureDetector(
+                                          onTap: () {
+                                            pDrop = !pDrop;
+                                            setState(() {});
+                                          },
+                                          child: Icon(
+                                            Icons.arrow_drop_down,
+                                            size:
+                                                MediaQuery.of(context).size.width /
+                                                    10,
+                                            color: Colors.white,
+                                          ))
+                                      : GestureDetector(
+                                          onTap: () {
+                                            pDrop = !pDrop;
+                                            setState(() {});
+                                          },
+                                          child: Icon(
+                                            Icons.arrow_drop_up,
+                                            size:
+                                                MediaQuery.of(context).size.width /
+                                                    10,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                ],
+                              ),
+                            )),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          _div(Colors.white),
-                          Padding(
-                            padding:  EdgeInsets.symmetric(vertical: MediaQuery.of(context).size.height/70),
-                            child: GestureDetector(
-                              onTap: () {
-                                _transaction = initiateTransaction(UpiIndiaApps.GooglePay,);
-                              },
-                              child: Container(
-                                child: Row(
-                                  children: <Widget>[
-                                    Text(
-                                      "Pay Using GooglePay",
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize:
-                                              MediaQuery.of(context).size.width / 25,
-                                          fontWeight: FontWeight.bold),
-                                    )
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          _div(Colors.white),
-                          Padding(
-                            padding:  EdgeInsets.symmetric(vertical: MediaQuery.of(context).size.height/70),
-                            child: GestureDetector(
-                              onTap: () {
-                                _transaction = initiateTransaction(UpiIndiaApps.PhonePe,);
-                              },
-                              child: Container(
-                                child: Row(
-                                  children: <Widget>[
-                                    Text(
-                                      "Pay Using PhonePe",
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize:
-                                          MediaQuery.of(context).size.width / 25,
-                                          fontWeight: FontWeight.bold),
-                                    )
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          _div(Colors.white),
-                          Padding(
-                            padding:  EdgeInsets.symmetric(vertical: MediaQuery.of(context).size.height/70),
-                            child: GestureDetector(
-                              onTap: () {
-                                _transaction = initiateTransaction(UpiIndiaApps.PayTM,);
-                              },
-                              child: Container(
-                                child: Row(
-                                  children: <Widget>[
-                                    Text(
-                                      "Pay Using PayTM",
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize:
-                                          MediaQuery.of(context).size.width / 25,
-                                          fontWeight: FontWeight.bold),
-                                    )
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          _div(Colors.white),
-                        ],
-                      ),
-                    ),
-                  )
-                : Container(),
-            FutureBuilder(
-              future: _transaction,
-              builder: (BuildContext context, AsyncSnapshot snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting ||
-                    snapshot.data == null)
-                  return Text(' ');
-                else {
-                  switch (snapshot.data.toString()) {
-                    case UpiIndiaResponseError.APP_NOT_INSTALLED:
-                      return Text(
-                        'App not installed.',
-                      );
-                      break;
-                    case UpiIndiaResponseError.INVALID_PARAMETERS:
-                      return Text(
-                        'Requested payment is invalid.',
-                      );
-                      break;
-                    case UpiIndiaResponseError.USER_CANCELLED:
-                      return Text(
-                        'It seems like you cancelled the transaction.',
-                      );
-                      break;
-                    case UpiIndiaResponseError.NULL_RESPONSE:
-                      return Text(
-                        'No data received',
-                      );
-                      break;
-                    default:
-                      UpiIndiaResponse _upiResponse;
-                      _upiResponse = UpiIndiaResponse(snapshot.data);
-                      txnId = _upiResponse.transactionId;
-                      resCode = _upiResponse.responseCode;
-                      txnRef = _upiResponse.transactionRefId;
-                      status = _upiResponse.status;
-                      pDrop = false;
-                      // ignore: unnecessary_statements
-                      (status == "success")?_updateSlot():null;
-                     // String approvalRef = _upiResponse.approvalRefNo;
-                      return AlertDialog(
-                        content: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    ],
+                  ),
+                ),
+              ),
+              (pDrop)
+                  ? Container(
+                      color: Colors.cyan[600],
+                      //height: MediaQuery.of(context).size.height/4,
+                      child: Padding(
+                        padding:  EdgeInsets.symmetric(
+                          vertical: MediaQuery.of(context).size.height/70,
+                          horizontal: MediaQuery.of(context).size.width/20
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
-                            (status == "success")?
-                            Text("Payment Succesfull!",
-                              style: TextStyle(color: Colors.green,
-                              fontSize: MediaQuery.of(context).size.width/25,
-                            ),):Text("Payment Failed!", style: TextStyle(color: Colors.red,
-                              fontSize: MediaQuery.of(context).size.width/25,
-                            ),),
-                            Text('Transaction Id: $txnId', style: TextStyle(color: Colors.black,
-                              fontSize: MediaQuery.of(context).size.width/25,
-                            ),),
-                            Text('Response Code: $resCode', style: TextStyle(color: Colors.black,
-                              fontSize: MediaQuery.of(context).size.width/25,
-                            ),),
-                            Text('Reference Id: $txnRef', style: TextStyle(color: Colors.black,
-                              fontSize: MediaQuery.of(context).size.width/25,
-                            ),),
-                            Text('Approval No: $status'),
+                            _div(Colors.white),
+                            Padding(
+                              padding:  EdgeInsets.symmetric(vertical: MediaQuery.of(context).size.height/70),
+                              child: GestureDetector(
+                                onTap: () {
+                                  _transaction = initiateTransaction(UpiIndiaApps.GooglePay,);
+                                },
+                                child: Container(
+                                  child: Row(
+                                    children: <Widget>[
+                                      Text(
+                                        "Pay Using GooglePay",
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize:
+                                                MediaQuery.of(context).size.width / 25,
+                                            fontWeight: FontWeight.bold),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            _div(Colors.white),
+                            Padding(
+                              padding:  EdgeInsets.symmetric(vertical: MediaQuery.of(context).size.height/70),
+                              child: GestureDetector(
+                                onTap: () {
+                                  _transaction = initiateTransaction(UpiIndiaApps.PhonePe,);
+                                },
+                                child: Container(
+                                  child: Row(
+                                    children: <Widget>[
+                                      Text(
+                                        "Pay Using PhonePe",
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize:
+                                            MediaQuery.of(context).size.width / 25,
+                                            fontWeight: FontWeight.bold),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            _div(Colors.white),
+                            Padding(
+                              padding:  EdgeInsets.symmetric(vertical: MediaQuery.of(context).size.height/70),
+                              child: GestureDetector(
+                                onTap: () {
+                                  _transaction = initiateTransaction(UpiIndiaApps.PayTM,);
+                                },
+                                child: Container(
+                                  child: Row(
+                                    children: <Widget>[
+                                      Text(
+                                        "Pay Using PayTM",
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize:
+                                            MediaQuery.of(context).size.width / 25,
+                                            fontWeight: FontWeight.bold),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            _div(Colors.white),
                           ],
                         ),
-                      );
+                      ),
+                    )
+                  : Container(),
+              FutureBuilder(
+                future: _transaction,
+                builder: (BuildContext context, AsyncSnapshot snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting ||
+                      snapshot.data == null)
+                    return Text(' ');
+                  else {
+                    switch (snapshot.data.toString()) {
+                      case UpiIndiaResponseError.APP_NOT_INSTALLED:
+                        return Text(
+                          'App not installed.',
+                        );
+                        break;
+                      case UpiIndiaResponseError.INVALID_PARAMETERS:
+                        return Text(
+                          'Requested payment is invalid.',
+                        );
+                        break;
+                      case UpiIndiaResponseError.USER_CANCELLED:
+                        return Text(
+                          'It seems like you cancelled the transaction.',
+                        );
+                        break;
+                      case UpiIndiaResponseError.NULL_RESPONSE:
+                        return Text(
+                          'No data received',
+                        );
+                        break;
+                      default:
+                        UpiIndiaResponse _upiResponse;
+                        _upiResponse = UpiIndiaResponse(snapshot.data);
+                        txnId = _upiResponse.transactionId;
+                        resCode = _upiResponse.responseCode;
+                        txnRef = _upiResponse.transactionRefId;
+                        status = _upiResponse.status;
+                        pDrop = false;
+                        // ignore: unnecessary_statements
+                        (status == "success")?_updateSlot():_removeSlot();
+                       // String approvalRef = _upiResponse.approvalRefNo;
+                        return AlertDialog(
+                          content: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: <Widget>[
+                              (status == "success")?
+                              Text("Payment Succesfull!",
+                                style: TextStyle(color: Colors.green,
+                                fontSize: MediaQuery.of(context).size.width/25,
+                              ),):Text("Payment Failed!", style: TextStyle(color: Colors.red,
+                                fontSize: MediaQuery.of(context).size.width/25,
+                              ),),
+                              Text('Transaction Id: $txnId', style: TextStyle(color: Colors.black,
+                                fontSize: MediaQuery.of(context).size.width/25,
+                              ),),
+                              Text('Response Code: $resCode', style: TextStyle(color: Colors.black,
+                                fontSize: MediaQuery.of(context).size.width/25,
+                              ),),
+                              Text('Reference Id: $txnRef', style: TextStyle(color: Colors.black,
+                                fontSize: MediaQuery.of(context).size.width/25,
+                              ),),
+                              Text('Approval No: $status'),
+                            ],
+                          ),
+                        );
+                    }
                   }
-                }
-              },
-            ),
+                },
+              ),
 
-          ],
-        ),]
+            ],
+          ),]
+        ),
       ),
     );
   }
@@ -419,10 +446,22 @@ class _ConfirmBookState extends State<ConfirmBook> {
     );
   }
 
-   _updateSlot() async {
+  _removeSlot() async {
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=> BookingsPage(venue, user)));
     if(slots[0].date ==  null){
+      for(int i =0;i<slots.length;i++){
+        await FirebaseDatabase.instance.reference().child("Bookings").child(venue.id.toString())
+            .child(slots[0].day.toString()).child(slots[i].session).child((slots[i].index+1).toString()).update({
+          "Status" : "NB",
+        });}
+    }
+  }
+
+   _updateSlot() async {
+     Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => BookingsPage(venue,user)));
+     if(slots[0].date ==  null){
     for(int i =0;i<slots.length;i++){
-   await FirebaseDatabase.instance.reference().child("Bookings").child("1")
+   await FirebaseDatabase.instance.reference().child("Bookings").child(venue.id.toString())
        .child(slots[0].day.toString()).child(slots[i].session).child((slots[i].index+1).toString()).update({
      "Status" : "B",
      "BookingId" : txnRef,
@@ -504,7 +543,6 @@ class _ConfirmBookState extends State<ConfirmBook> {
     FirebaseDatabase.instance.reference().child("VBDetails").child(venue.id.toString()).child("Total").update({
       "SlotCount" : venueSlotCount + slots.length,
     });
-  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => BookingsPage(venue,user)));
   }
 }
 

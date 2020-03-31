@@ -28,6 +28,8 @@ dependencies:
   shared_preferences:
   flutter_map: any
   latlong: ^0.6.1
+  mailer2: ^1.2.5
+  url_launcher:
   firebase_database:
   firebase_auth:
   curved_navigation_bar:

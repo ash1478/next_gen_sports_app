@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:grouped_buttons/grouped_buttons.dart';
 import 'package:intl/intl.dart';
 
@@ -12,8 +14,9 @@ class _PhoneAuthState extends State<PhoneAuth> {
   String _picked = "Pay and Play";
   String convDate;
   final _formkey = GlobalKey<FormState>();
+  String smsCode,verificationId;
   TextEditingController date = TextEditingController();
-  String _name;
+  String phoneNo;
   String _DOB;
   @override
   Widget build(BuildContext context) {
@@ -44,7 +47,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  FlatButton(onPressed: (){},
+                  FlatButton(onPressed: ()=> _verifyPhone(),
                       color: Colors.grey[200],
                       child: Text(
                         'Authenticate',
@@ -131,7 +134,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
                     lastDate: DateTime(DateTime.now().year + 10))
                     .then((value) {
                   convDate = new DateFormat("dd/MM/yyyy").format(value);
-
+                  date = new TextEditingController(text: convDate);
                 });
                 setState(() {});
               },
@@ -149,7 +152,6 @@ class _PhoneAuthState extends State<PhoneAuth> {
         ),
         controller: date,
         keyboardType: TextInputType.phone,
-
         validator: (String value){
           if(value.isEmpty){
             return 'DOB is required';
@@ -158,7 +160,8 @@ class _PhoneAuthState extends State<PhoneAuth> {
 
         },
         onSaved: (String value){
-          _name=value;
+
+          _DOB=value;
         },
 
       ),
@@ -191,8 +194,8 @@ class _PhoneAuthState extends State<PhoneAuth> {
           else return null;
 
         },
-        onSaved: (String value){
-          _name=value;
+        onChanged: (String value){
+          phoneNo=value;
         },
       ),
     );
@@ -230,10 +233,56 @@ class _PhoneAuthState extends State<PhoneAuth> {
 //ukhvjrkyutf
         },
         onSaved: (String value){
-          _name=value;
+          smsCode=value;
         },
       ),
     );
   }
+
+  Future<void> _verifyPhone() async{
+
+    final PhoneVerificationCompleted verificationCompleted = (AuthCredential authResult){
+      //FirebaseAuth.instance.signInWithCredential(authResult);
+      Fluttertoast.showToast(
+        msg: "Auth Succesfull!",
+        fontSize: MediaQuery.of(context).size.width/25,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.black.withOpacity(0.8),
+        textColor: Colors.white,
+      );
+    };
+
+    final PhoneVerificationFailed verificationFailed = (AuthException exception){
+      Fluttertoast.showToast(
+        msg: "${exception.message}",
+        fontSize: MediaQuery.of(context).size.width/25,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.black.withOpacity(0.8),
+        textColor: Colors.white,
+      );
+    };
+
+    final PhoneCodeSent smsSent = (String verId, [int forceResend]){
+      verificationId = verId;
+      print('asdasdasdasdas');
+    };
+
+    final PhoneCodeAutoRetrievalTimeout autoRetrievalTimeout = (String verId){
+      verificationId = verId;
+      print("asads");
+    };
+
+    await FirebaseAuth.instance.verifyPhoneNumber(
+        phoneNumber: "+91" + phoneNo,
+        timeout: Duration(seconds: 10),
+        verificationCompleted: verificationCompleted,
+        verificationFailed: verificationFailed,
+        codeSent: smsSent,
+        codeAutoRetrievalTimeout: autoRetrievalTimeout
+    );
+  }
+
 }
 

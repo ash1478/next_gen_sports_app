@@ -53,17 +53,20 @@ class _SplashState extends State<Splash> {
 
   _navigate() async {
     SharedPreferences _uid = await SharedPreferences.getInstance();
-   String uid = _uid.getString('userUid');
+    String uid = _uid.getString('userUid');
     user.uid = uid;
     if(uid!=null){
       await FirebaseDatabase.instance.reference().child("Users").child(uid).once().then((DataSnapshot snapshot){
-        user.getDetails(snapshot.value['Name'], snapshot.value['Email'], snapshot.value['DOB']);
+        user.getDetails(snapshot.value['Name'], snapshot.value['Email'], snapshot.value['DOB'],snapshot.value['Phone'],snapshot.value['Count']);
       }).catchError((e){
         print(e);
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Login()));
       });
-      //await _getMarkers();
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => PhoneAuth()));
+      await FirebaseDatabase.instance.reference().child('UsersList').child(user.uid)
+          .once().then((DataSnapshot snapshot){
+        user.slotCount = snapshot.value['Count'];
+      });
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage(user)));
 
     }
     else {

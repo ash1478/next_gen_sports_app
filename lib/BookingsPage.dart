@@ -1585,7 +1585,7 @@ class _BookingsPageState extends State<BookingsPage> {
                       );
                     }
                     else{
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => ConfirmBook(user,slots,venue)));
+                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ConfirmBook(user,slots,venue)));
                     }
                   }),
             )

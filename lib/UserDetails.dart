@@ -1,11 +1,13 @@
 class UserDetails {
   String name,email,dob,phone,uid;
+  int slotCount;
 
-  void getDetails(name,email,dob){
+  void getDetails(name,email,dob,phone,count){
     this.name = name;
     this.email = email;
     this.dob = dob;
-    //this.phone = phone;
+    this.phone = phone;
+    this.slotCount = count;
   }
 
   toJson(){
@@ -14,14 +16,18 @@ class UserDetails {
       'Email' : email,
       'DOB' : dob,
       'Uid' : uid,
+      'Phone' : phone,
+      'Count' : 0,
     };
   }
 
-  toJsonGoogle(){
+  toJsonList(){
     return {
       'Name' : name,
       'Email' : email,
       'Uid' : uid,
+      'Phone' : phone,
+      'Count' : 0,
     };
   }
   toJsonDOB(){

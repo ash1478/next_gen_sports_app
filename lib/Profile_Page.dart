@@ -1,25 +1,44 @@
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:next_gen_sports_app/Booking_History.dart';
+import 'package:next_gen_sports_app/HomePage.dart';
+import 'package:next_gen_sports_app/LoginPage.dart';
+import 'package:next_gen_sports_app/UserDetails.dart';
 import 'dart:ui' as ui;
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 class Profile extends StatefulWidget {
+  UserDetails user;
+  Profile(this.user);
   @override
-  _ProfileState createState() => _ProfileState();
+  _ProfileState createState() => _ProfileState(user);
 }
 
 class _ProfileState extends State<Profile> {
+  UserDetails user;
+  _ProfileState(this.user);
+  int userSlotCount;
 
+  _getCount() async{
+    await FirebaseDatabase.instance.reference().child("UsersList").child(user.uid).once().then((DataSnapshot snapshot){
+      userSlotCount = snapshot.value['Count'];
+    });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _getCount();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final _width = MediaQuery
-        .of(context)
-        .size
-        .width;
-    final _height = MediaQuery
-        .of(context)
-        .size
-        .height;
+    final _width = MediaQuery.of(context).size.width;
+    final _height = MediaQuery.of(context).size.height;
     final String imgUrl =
         'https://moonvillageassociation.org/wp-content/uploads/2018/06/default-profile-picture1.jpg';
 
@@ -39,6 +58,14 @@ class _ProfileState extends State<Profile> {
           Icon(Icons.person, size: 30, color: Colors.white),
         ],
         color: Colors.cyan[600],
+        onTap: (index){
+          if(index == 1){
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage(user)));
+          }
+          else if(index == 0){
+            //Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => BookingHistory(user, monthCount)));
+          }
+        },
       ),
       appBar: AppBar(
         leading: IconButton(
@@ -58,7 +85,18 @@ class _ProfileState extends State<Profile> {
                 Icons.power_settings_new,
                 color: Colors.black,
               ),
-              onPressed: () {})
+              onPressed: () async {
+                SharedPreferences pref_email =
+                    await SharedPreferences.getInstance();
+                SharedPreferences pref_uid =
+                    await SharedPreferences.getInstance();
+                pref_email.remove('userEmail');
+                pref_uid.remove('userUid');
+                FirebaseAuth.instance.signOut().then((val) {
+                  Navigator.pushReplacement(context,
+                      MaterialPageRoute(builder: (context) => Login()));
+                });
+              })
         ],
       ),
       backgroundColor: Colors.white,
@@ -77,13 +115,14 @@ class _ProfileState extends State<Profile> {
               SizedBox(
                 height: _height / 25.0,
               ),
-              Row(mainAxisAlignment: MainAxisAlignment.center,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   Stack(
                     children: <Widget>[
                       Center(
                         child: Text(
-                          'Micheal Scott',
+                          user.name,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               fontWeight: FontWeight.bold,
@@ -99,7 +138,7 @@ class _ProfileState extends State<Profile> {
                 padding: EdgeInsets.only(
                     top: _height / 50, left: _width / 8, right: _width / 8),
                 child: Text(
-                  '+91XXXXXXXXXX',
+                  user.phone,
                   style: TextStyle(
                       fontWeight: FontWeight.normal,
                       fontSize: _width / 25,
@@ -119,21 +158,20 @@ class _ProfileState extends State<Profile> {
                       color: Colors.grey[100],
                       borderRadius: BorderRadius.circular(_width / 30),
                       border: Border.all(width: 1)),
-                  margin: EdgeInsets.only(
-                      left: _width / 20, right: _width / 20),
-                  padding: EdgeInsets.only(
-                      top: _height / 40, bottom: _height / 40),
+                  margin:
+                      EdgeInsets.only(left: _width / 20, right: _width / 20),
+                  padding:
+                      EdgeInsets.only(top: _height / 40, bottom: _height / 40),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
                       Column(children: <Widget>[
-                        Text('6',
+                        Text(user.slotCount.toString(),
                             style: TextStyle(
-                                fontSize: _width / 6,
-                                color: Colors.tealAccent),
+                                fontSize: _width / 6, color: Colors.tealAccent),
                             textAlign: TextAlign.center),
-                        Text('Games \nPlayed',
+                        Text('Total Slots\nBooked',
                             style: TextStyle(
                                 fontSize: _width / 25, color: Colors.teal),
                             textAlign: TextAlign.center)
@@ -141,24 +179,20 @@ class _ProfileState extends State<Profile> {
                       Column(children: <Widget>[
                         Text('2',
                             style: TextStyle(
-                                fontSize: _width / 6,
-                                color: Colors.tealAccent),
+                                fontSize: _width / 6, color: Colors.tealAccent),
                             textAlign: TextAlign.center),
                         Text('Games \nToday',
                             style: TextStyle(
                                 fontSize: _width / 25, color: Colors.teal),
                             textAlign: TextAlign.center)
-                      ]
-                      ),
+                      ]),
                     ],
                   ),
                 ),
-              ]
-              ),
+              ]),
               SizedBox(height: _height / 40),
               Padding(
-                padding:
-                EdgeInsets.only(left: _width / 5, right: _width / 5),
+                padding: EdgeInsets.only(left: _width / 5, right: _width / 5),
                 child: Column(
                   children: <Widget>[
                     RaisedButton(
@@ -214,7 +248,6 @@ class _ProfileState extends State<Profile> {
                       ),
                       color: Colors.grey[300],
                     ),
-
                   ],
                 ),
               ),
@@ -224,6 +257,4 @@ class _ProfileState extends State<Profile> {
       ),
     );
   }
-
-
 }

@@ -24,6 +24,9 @@ class _RegisterState extends State<Register> {
   UserDetails user = UserDetails();
   GoogleSignIn googleAuth = GoogleSignIn();
   List<Marker> markers =[];
+  String _phoneNo;
+  String verificationId;
+
 
 
 
@@ -48,102 +51,6 @@ class _RegisterState extends State<Register> {
     }
     return val;
   }
-
-  _getMarkers() async{
-    int tot =0;
-    await FirebaseDatabase.instance.reference().child("Venues").child("1").once().then((DataSnapshot snap){
-      tot = snap.value['Total'];
-    });
-    for(int i =1;i<=tot;i++){
-      await FirebaseDatabase.instance.reference().child("Venues").child(i.toString()).once().then((DataSnapshot snapshot){
-        markers.add(Marker(
-            point: LatLng(snapshot.value['Lat'], snapshot.value['Long']),
-            width: MediaQuery.of(context).size.width/7,
-            height: MediaQuery.of(context).size.width/7,
-            builder: (context){
-              return Container(
-                child: IconButton(icon: Icon(Icons.room,color: Colors.red,),
-                    iconSize: MediaQuery.of(context).size.width/7,
-                    onPressed: (){
-                      showModalBottomSheet(context: context, builder: (builder){
-                        return Container(
-                          decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.vertical(top: Radius.circular(MediaQuery.of(context).size.width/10))
-                          ),
-                          child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                              Container(height: MediaQuery.of(context).size.height/4,
-                                width: MediaQuery.of(context).size.width,
-                                decoration: BoxDecoration(
-                                  // borderRadius: BorderRadius.vertical(
-                                  // bottom: Radius.circular(MediaQuery.of(context).size.width/20)),
-                                    image: DecorationImage(image: NetworkImage(snapshot.value['ImgUrl'],),
-                                        fit: BoxFit.cover)
-                                ),
-                              ),
-                              Padding(
-                                padding:  EdgeInsets.only(
-                                    left: MediaQuery.of(context).size.width/20,
-                                    right: MediaQuery.of(context).size.width/20),
-                                child: Text(snapshot.value['Name'],style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: MediaQuery.of(context).size.width/16,
-                                    fontWeight: FontWeight.bold,
-                                    fontFamily: ""),),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(
-                                    left: MediaQuery.of(context).size.width/20,
-                                    right: MediaQuery.of(context).size.width/20),
-                                child: Text(snapshot.value['Address'],style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontFamily: "OpenSans",
-                                    fontSize: MediaQuery.of(context).size.width/27)),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(
-                                    left: MediaQuery.of(context).size.width/20,
-                                    right: MediaQuery.of(context).size.width/20),
-                                child: Text(snapshot.value['Desc'],style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: MediaQuery.of(context).size.width/25,
-                                  fontFamily: "OpenSans",)),
-
-
-                              ),
-
-                              Row(
-                                children: <Widget>[
-                                  Expanded(
-                                    child: Container(color: Colors.lightBlue,
-                                      height: MediaQuery.of(context).size.height/16,
-                                      child: Center(
-                                        child: Text("Book Now",
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: MediaQuery.of(context).size.width/20,
-                                          ),),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              )
-                            ],
-                          ),
-                        );
-                      });
-                    }),
-              );
-            }
-        ));
-      });
-    }
-  }
-
-
 
 
 
@@ -263,6 +170,34 @@ class _RegisterState extends State<Register> {
       ),
     );
   }
+  Widget _buildLoginPhone() {
+    return Padding(
+      padding: EdgeInsets.only(
+          top: MediaQuery.of(context).size.height / 20,
+          bottom: MediaQuery.of(context).size.height / 60),
+      child: TextFormField(
+        decoration: InputDecoration(
+            labelText: 'Phone Number',
+            labelStyle: TextStyle(
+                color: Colors.grey[600],
+                fontFamily: 'OpenSans',
+                fontSize: MediaQuery.of(context).size.width / 30,
+                fontWeight: FontWeight.bold),
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.grey[350]),
+            )),
+        validator: (String value) {
+          if (value.isEmpty) {
+            return 'Phone No. is required';
+          } else
+            return null;
+        },
+        onSaved: (String value) {
+          _phoneNo = value;
+        },
+      ),
+    );
+  }
   Widget _buildPass(){
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).size.height/60),
@@ -372,8 +307,7 @@ class _RegisterState extends State<Register> {
             fontSize: MediaQuery.of(context).size.width/30,
           );
           user.name = _account.displayName;
-          await FirebaseDatabase.instance.reference().child("Users").child(user.uid).set(user.toJsonGoogle());
-          await _getMarkers();
+         // await FirebaseDatabase.instance.reference().child("Users").child(user.uid).set(user.toJsonGoogle());
           Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => HomePage(user)));
           ifExist = true;
         });
@@ -408,56 +342,137 @@ class _RegisterState extends State<Register> {
     }
   }
 Future<void> _register() async{
-  if (_formkey.currentState.validate()) {
-    _formkey.currentState.save();
-    try {
-      bool ifExist = false;
-      AuthResult userResult = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: _email, password: _cpassword).catchError((e){if(e is PlatformException)
-      {
-        if(e.code == 'ERROR_EMAIL_ALREADY_IN_USE'){
-          Fluttertoast.showToast(
-            msg: 'Email-ID is already in use, try again with another id.',
-            gravity: ToastGravity.BOTTOM,
-            toastLength: Toast.LENGTH_LONG,
-            backgroundColor: Colors.black.withOpacity(0.7),
-            textColor: Colors.white,
-            fontSize: MediaQuery.of(context).size.width/30,
-          );
-          ifExist = true;
-        }
-      }
-      });
-      if(!ifExist){
-        if(user != null){
-          FirebaseUser userResult = await FirebaseAuth.instance.currentUser();
-          Fluttertoast.showToast(
-            msg: "Account created successfully!",
-            gravity: ToastGravity.BOTTOM,
-            toastLength: Toast.LENGTH_SHORT,
-            backgroundColor: Colors.black,
-            textColor: Colors.white,
-            fontSize: MediaQuery.of(context).size.width/30,
-          );
-          user.uid = userResult.uid;
-          await FirebaseDatabase.instance.reference().child("Users").child(user.uid).set(user.toJson());
-          await _getMarkers();
-          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => HomePage(user)));
-        }
-        else {
-          Fluttertoast.showToast(
-            msg: 'Something went wrong! Check your credentials or your network.',
-            gravity: ToastGravity.BOTTOM,
-            toastLength: Toast.LENGTH_LONG,
-            backgroundColor: Colors.black.withOpacity(0.7),
-            textColor: Colors.white,
-            fontSize: MediaQuery.of(context).size.width/30,
-          );
-        }}
-    } catch (e) {
-      print(e);
+bool inUse = false;
+  Fluttertoast.showToast(
+    msg: "Please wait! This may take few seconds.",
+    gravity: ToastGravity.BOTTOM,
+    toastLength: Toast.LENGTH_SHORT,
+    backgroundColor: Colors.black,
+    textColor: Colors.white,
+    fontSize: MediaQuery.of(context).size.width / 30,
+  );
+
+  final PhoneVerificationCompleted verificationCompleted =
+      (AuthCredential authResult) async {
+    FirebaseAuth.instance.signInWithCredential(authResult);
+      if(authResult != null){
+        Fluttertoast.showToast(
+          msg: "Registration Succesfull!",
+          fontSize: MediaQuery.of(context).size.width / 25,
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.black.withOpacity(0.8),
+          textColor: Colors.white,
+        );
     }
+    FirebaseUser currUser = await  FirebaseAuth.instance.currentUser();
+    user.uid = _phoneNo;
+    SharedPreferences pref_user = await SharedPreferences.getInstance();
+    pref_user.setString('userUid', user.uid);
+    user.phone = _phoneNo;
+    user.email = _email;
+    user.slotCount =0;
+    await FirebaseDatabase.instance.reference().child('Users').child(user.uid).set(user.toJson());
+    await FirebaseDatabase.instance.reference().child('UsersList').child(user.uid).set(user.toJsonList());
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage(user)) );
+      };
+
+  final PhoneVerificationFailed verificationFailed =
+      (AuthException exception) {
+    Fluttertoast.showToast(
+      msg: "${exception.message}",
+      fontSize: MediaQuery.of(context).size.width / 25,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      backgroundColor: Colors.black.withOpacity(0.8),
+      textColor: Colors.white,
+    );
+  };
+
+  final PhoneCodeSent smsSent = (String verId, [int forceResend]) {
+    verificationId = verId;
+    print('asdasdasdasdas');
+  };
+
+  final PhoneCodeAutoRetrievalTimeout autoRetrievalTimeout = (String verId) {
+    verificationId = verId;
+    print("asads");
+  };
+  final formState = _formkey.currentState;
+  if (formState.validate()) {
+    formState.save();
+    await FirebaseDatabase.instance.reference().child("Users").child(_phoneNo).once().then((DataSnapshot snapshot){
+      print(snapshot.value['Name']);
+      Fluttertoast.showToast(
+        msg: "Number Already in Use!",
+        fontSize: MediaQuery.of(context).size.width / 25,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.black.withOpacity(0.8),
+        textColor: Colors.white,
+      );
+      inUse = true;
+    }).catchError((e){
+      print(e);
+    });
+    (!inUse)?await FirebaseAuth.instance.verifyPhoneNumber(
+        phoneNumber: "+91" + _phoneNo,
+        timeout: Duration(seconds: 10),
+        verificationCompleted: verificationCompleted,
+        verificationFailed: verificationFailed,
+        codeSent: smsSent,
+        codeAutoRetrievalTimeout: autoRetrievalTimeout):null;
   }
+
+//  if (_formkey.currentState.validate()) {
+//    _formkey.currentState.save();
+//    try {
+//      bool ifExist = false;
+//      AuthResult userResult = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+//          email: _email, password: _cpassword).catchError((e){if(e is PlatformException)
+//      {
+//        if(e.code == 'ERROR_EMAIL_ALREADY_IN_USE'){
+//          Fluttertoast.showToast(
+//            msg: 'Email-ID is already in use, try again with another id.',
+//            gravity: ToastGravity.BOTTOM,
+//            toastLength: Toast.LENGTH_LONG,
+//            backgroundColor: Colors.black.withOpacity(0.7),
+//            textColor: Colors.white,
+//            fontSize: MediaQuery.of(context).size.width/30,
+//          );
+//          ifExist = true;
+//        }
+//      }
+//      });
+//      if(!ifExist){
+//        if(user != null){
+//          FirebaseUser userResult = await FirebaseAuth.instance.currentUser();
+//          Fluttertoast.showToast(
+//            msg: "Account created successfully!",
+//            gravity: ToastGravity.BOTTOM,
+//            toastLength: Toast.LENGTH_SHORT,
+//            backgroundColor: Colors.black,
+//            textColor: Colors.white,
+//            fontSize: MediaQuery.of(context).size.width/30,
+//          );
+//          user.uid = userResult.uid;
+//          await FirebaseDatabase.instance.reference().child("Users").child(user.uid).set(user.toJson());
+//          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => HomePage(user)));
+//        }
+//        else {
+//          Fluttertoast.showToast(
+//            msg: 'Something went wrong! Check your credentials or your network.',
+//            gravity: ToastGravity.BOTTOM,
+//            toastLength: Toast.LENGTH_LONG,
+//            backgroundColor: Colors.black.withOpacity(0.7),
+//            textColor: Colors.white,
+//            fontSize: MediaQuery.of(context).size.width/30,
+//          );
+//        }}
+//    } catch (e) {
+//      print(e);
+//    }
+//  }
 }
   @override
   Widget build(BuildContext context) {
@@ -503,11 +518,10 @@ Future<void> _register() async{
                  child: Column(
                    crossAxisAlignment: CrossAxisAlignment.center,
                    children: <Widget>[
+                     _buildLoginPhone(),
                      _buildName(),
                      _buildDOB(),
                      _buildEmail(),
-                     _buildPass(),
-                     _buildConfPass(),
                    ],
                  ),
            )
