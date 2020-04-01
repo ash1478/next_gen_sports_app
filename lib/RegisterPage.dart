@@ -420,6 +420,9 @@ Future<void> _verifyPhone() async{
     user.slotCount =0;
     await FirebaseDatabase.instance.reference().child('Users').child(user.uid).set(user.toJson());
     await FirebaseDatabase.instance.reference().child('UsersList').child(user.uid).set(user.toJsonList());
+    await FirebaseDatabase.instance.reference().child("PhoneNumbers").child(_phoneNo).set({
+      "Name" : user.name,
+    });
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage(user)) );
   };
 
@@ -447,7 +450,8 @@ Future<void> _verifyPhone() async{
   final formState = _formkey.currentState;
   if (formState.validate()) {
     formState.save();
-    await FirebaseDatabase.instance.reference().child("Users").child(user.uid).once().then((DataSnapshot snapshot){
+    FirebaseUser delUser = await FirebaseAuth.instance.currentUser();
+    await FirebaseDatabase.instance.reference().child("PhoneNumbers").child(_phoneNo).once().then((DataSnapshot snapshot){
       print(snapshot.value['Name']);
       Fluttertoast.showToast(
         msg: "Number Already in Use!",
@@ -457,6 +461,7 @@ Future<void> _verifyPhone() async{
         backgroundColor: Colors.black.withOpacity(0.8),
         textColor: Colors.white,
       );
+      delUser.delete();
       inUse = true;
     }).catchError((e){
       print(e);

@@ -22,17 +22,10 @@ class _ProfileState extends State<Profile> {
   _ProfileState(this.user);
   int userSlotCount;
 
-  _getCount() async{
-    await FirebaseDatabase.instance.reference().child("UsersList").child(user.uid).once().then((DataSnapshot snapshot){
-      userSlotCount = snapshot.value['Count'];
-    });
-  }
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    _getCount();
   }
 
   @override
