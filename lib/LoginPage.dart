@@ -215,7 +215,6 @@ class _LoginState extends State<Login> {
 
      // How you use and store passwords is up to you. Beware of storing passwords in plain.
 
-     // Create our email transport.
      var emailTransport = new SmtpTransport(options);
 
      // Create our mail/envelope.
