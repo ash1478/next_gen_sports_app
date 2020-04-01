@@ -447,7 +447,7 @@ class _ConfirmBookState extends State<ConfirmBook> {
   }
 
   _removeSlot() async {
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=> BookingsPage(venue, user)));
+    print("called");
     if(slots[0].date ==  null){
       for(int i =0;i<slots.length;i++){
         await FirebaseDatabase.instance.reference().child("Bookings").child(venue.id.toString())
@@ -455,6 +455,7 @@ class _ConfirmBookState extends State<ConfirmBook> {
           "Status" : "NB",
         });}
     }
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=> BookingsPage(venue, user)));
   }
 
    _updateSlot() async {

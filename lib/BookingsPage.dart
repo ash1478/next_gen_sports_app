@@ -530,6 +530,7 @@ class _BookingsPageState extends State<BookingsPage> {
     _setSession();
     _setSlot();
     _startTimer();
+    day = DateTime.now().day;
   }
 
   @override

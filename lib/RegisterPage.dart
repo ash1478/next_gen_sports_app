@@ -214,6 +214,11 @@ class _RegisterState extends State<Register> {
           ),
         obscureText: true,
         controller: _pass,
+        onSaved: (val){
+            setState(() {
+              _cpassword = val;
+            });
+        },
         validator: (String _pass){
           if(_pass.isEmpty){
             return 'Name is required';
@@ -342,7 +347,6 @@ class _RegisterState extends State<Register> {
     }
   }
 Future<void> _register() async{
-bool inUse = false;
   Fluttertoast.showToast(
     msg: "Please wait! This may take few seconds.",
     gravity: ToastGravity.BOTTOM,
@@ -351,22 +355,64 @@ bool inUse = false;
     textColor: Colors.white,
     fontSize: MediaQuery.of(context).size.width / 30,
   );
+  if (_formkey.currentState.validate()) {
+    _formkey.currentState.save();
+    try {
+      bool ifExist = false;
+      AuthResult userResult = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: _email, password: _cpassword).catchError((e){if(e is PlatformException)
+      {
+        if(e.code == 'ERROR_EMAIL_ALREADY_IN_USE'){
+          Fluttertoast.showToast(
+            msg: 'Email-ID is already in use, try again with another id.',
+            gravity: ToastGravity.BOTTOM,
+            toastLength: Toast.LENGTH_LONG,
+            backgroundColor: Colors.black.withOpacity(0.7),
+            textColor: Colors.white,
+            fontSize: MediaQuery.of(context).size.width/30,
+          );
+          ifExist = true;
+        }
+      }
+      });
+      if(!ifExist){
+        if(userResult != null){
+          FirebaseUser firebaseUser = await FirebaseAuth.instance.currentUser();
+          user.uid = firebaseUser.uid;
+          _verifyPhone();
+        }
+        else {
+          Fluttertoast.showToast(
+            msg: 'Something went wrong! Check your credentials or your network.',
+            gravity: ToastGravity.BOTTOM,
+            toastLength: Toast.LENGTH_LONG,
+            backgroundColor: Colors.black.withOpacity(0.7),
+            textColor: Colors.white,
+            fontSize: MediaQuery.of(context).size.width/30,
+          );
+        }}
+    } catch (e) {
+      print(e);
+    }
+  }
+}
 
+Future<void> _verifyPhone() async{
+  bool inUse = false;
   final PhoneVerificationCompleted verificationCompleted =
       (AuthCredential authResult) async {
-    FirebaseAuth.instance.signInWithCredential(authResult);
-      if(authResult != null){
-        Fluttertoast.showToast(
-          msg: "Registration Succesfull!",
-          fontSize: MediaQuery.of(context).size.width / 25,
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          backgroundColor: Colors.black.withOpacity(0.8),
-          textColor: Colors.white,
-        );
+    FirebaseUser linkUser = await FirebaseAuth.instance.currentUser();
+    linkUser.linkWithCredential(authResult);
+    if(authResult != null){
+      Fluttertoast.showToast(
+        msg: "Registration Succesfull!",
+        fontSize: MediaQuery.of(context).size.width / 25,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.black.withOpacity(0.8),
+        textColor: Colors.white,
+      );
     }
-    FirebaseUser currUser = await  FirebaseAuth.instance.currentUser();
-    user.uid = _phoneNo;
     SharedPreferences pref_user = await SharedPreferences.getInstance();
     pref_user.setString('userUid', user.uid);
     user.phone = _phoneNo;
@@ -375,7 +421,7 @@ bool inUse = false;
     await FirebaseDatabase.instance.reference().child('Users').child(user.uid).set(user.toJson());
     await FirebaseDatabase.instance.reference().child('UsersList').child(user.uid).set(user.toJsonList());
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage(user)) );
-      };
+  };
 
   final PhoneVerificationFailed verificationFailed =
       (AuthException exception) {
@@ -401,7 +447,7 @@ bool inUse = false;
   final formState = _formkey.currentState;
   if (formState.validate()) {
     formState.save();
-    await FirebaseDatabase.instance.reference().child("Users").child(_phoneNo).once().then((DataSnapshot snapshot){
+    await FirebaseDatabase.instance.reference().child("Users").child(user.uid).once().then((DataSnapshot snapshot){
       print(snapshot.value['Name']);
       Fluttertoast.showToast(
         msg: "Number Already in Use!",
@@ -424,56 +470,13 @@ bool inUse = false;
         codeAutoRetrievalTimeout: autoRetrievalTimeout):null;
   }
 
-//  if (_formkey.currentState.validate()) {
-//    _formkey.currentState.save();
-//    try {
-//      bool ifExist = false;
-//      AuthResult userResult = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-//          email: _email, password: _cpassword).catchError((e){if(e is PlatformException)
-//      {
-//        if(e.code == 'ERROR_EMAIL_ALREADY_IN_USE'){
-//          Fluttertoast.showToast(
-//            msg: 'Email-ID is already in use, try again with another id.',
-//            gravity: ToastGravity.BOTTOM,
-//            toastLength: Toast.LENGTH_LONG,
-//            backgroundColor: Colors.black.withOpacity(0.7),
-//            textColor: Colors.white,
-//            fontSize: MediaQuery.of(context).size.width/30,
-//          );
-//          ifExist = true;
-//        }
-//      }
-//      });
-//      if(!ifExist){
-//        if(user != null){
-//          FirebaseUser userResult = await FirebaseAuth.instance.currentUser();
-//          Fluttertoast.showToast(
-//            msg: "Account created successfully!",
-//            gravity: ToastGravity.BOTTOM,
-//            toastLength: Toast.LENGTH_SHORT,
-//            backgroundColor: Colors.black,
-//            textColor: Colors.white,
-//            fontSize: MediaQuery.of(context).size.width/30,
-//          );
-//          user.uid = userResult.uid;
-//          await FirebaseDatabase.instance.reference().child("Users").child(user.uid).set(user.toJson());
-//          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => HomePage(user)));
-//        }
-//        else {
-//          Fluttertoast.showToast(
-//            msg: 'Something went wrong! Check your credentials or your network.',
-//            gravity: ToastGravity.BOTTOM,
-//            toastLength: Toast.LENGTH_LONG,
-//            backgroundColor: Colors.black.withOpacity(0.7),
-//            textColor: Colors.white,
-//            fontSize: MediaQuery.of(context).size.width/30,
-//          );
-//        }}
-//    } catch (e) {
-//      print(e);
-//    }
-//  }
 }
+
+
+
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -522,6 +525,7 @@ bool inUse = false;
                      _buildName(),
                      _buildDOB(),
                      _buildEmail(),
+                     _buildPass(),
                    ],
                  ),
            )

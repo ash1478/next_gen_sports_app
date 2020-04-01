@@ -47,7 +47,7 @@ class _LoginState extends State<Login> {
   }
 
   final _formkey1 = GlobalKey<FormState>();
-  String _phoneNo;
+  String _email;
   String _password;
   Widget _buildLoginPhone() {
     return Padding(
@@ -56,7 +56,7 @@ class _LoginState extends State<Login> {
           bottom: MediaQuery.of(context).size.height / 60),
       child: TextFormField(
         decoration: InputDecoration(
-            labelText: 'Phone Number',
+            labelText: 'Email - ID',
             labelStyle: TextStyle(
                 color: Colors.grey[600],
                 fontFamily: 'OpenSans',
@@ -67,12 +67,12 @@ class _LoginState extends State<Login> {
             )),
         validator: (String value) {
           if (value.isEmpty) {
-            return 'Phone No. is required';
+            return 'Email is required';
           } else
             return null;
         },
         onSaved: (String value) {
-          _phoneNo = value;
+          _email = value;
         },
       ),
     );
@@ -195,111 +195,53 @@ class _LoginState extends State<Login> {
       textColor: Colors.white,
       fontSize: MediaQuery.of(context).size.width / 30,
     );
-
     final formState = _formkey1.currentState;
-   if(formState.validate())    {
-     formState.save();
-//     final Email email = Email(
-//       body: "12345",
-//       subject: "Test",
-//       recipients: ["ashwin11447788@gmail.com"],
-//     );
-//     await FlutterEmailSender.send(email);
-     var options = new GmailSmtpOptions()
-        ..hostName = "smtp.sendgrid.net"
-        ..port = 	465
-        ..username = 'apikey'
-        ..password = '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';
-     // Note: if you have Google's "app specific passwords" enabled,
-     // you need to use one of those here.
+    if(formState.validate())
+    {
+      try {
+        formState.save();
+        AuthResult authresult = await FirebaseAuth.instance.signInWithEmailAndPassword(email: _email, password: _password).catchError((e){
+          Fluttertoast.showToast(
+            msg: 'Something went wrong! Check your credentials or your network.',
+            gravity: ToastGravity.BOTTOM,
+            toastLength: Toast.LENGTH_LONG,
+            backgroundColor: Colors.black.withOpacity(0.7),
+            textColor: Colors.white,
+            fontSize: MediaQuery.of(context).size.width/30,
+          );
+        });
 
-     // How you use and store passwords is up to you. Beware of storing passwords in plain.
+        if(authresult != null){
+          Fluttertoast.showToast(
+            msg: "Please wait! This may take few seconds.",
+            gravity: ToastGravity.BOTTOM,
+            toastLength: Toast.LENGTH_SHORT,
+            backgroundColor: Colors.black,
+            textColor: Colors.white,
+            fontSize: MediaQuery.of(context).size.width/30,
+          );
+          final FirebaseUser userResult = await FirebaseAuth.instance.currentUser();
+          user.uid=userResult.uid;
+          SharedPreferences pref_user = await SharedPreferences.getInstance();
+          pref_user.setString('userUid', user.uid);
+          await FirebaseDatabase.instance.reference().child('Users').child(user.uid)
+              .once().then((DataSnapshot snapshot){
+            user.getDetails(snapshot.value["Name"], snapshot.value["Email"], snapshot.value["DOB"],snapshot.value['Phone'],snapshot.value['Count']);
+          });
+          Fluttertoast.showToast(
+            msg: "Logged in successfully!",
+            gravity: ToastGravity.BOTTOM,
+            toastLength: Toast.LENGTH_SHORT,
+            backgroundColor: Colors.black,
+            textColor: Colors.white,
+            fontSize: MediaQuery.of(context).size.width/30,
+          );
+        }}catch(e){
+        print(e);
+      }
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage(user)) );
 
-     var emailTransport = new SmtpTransport(options);
-
-     // Create our mail/envelope.
-     var envelope = new Envelope()
-       ..from = 'tridents1478@gmail.com'
-       ..recipients.add('ashwin11447788@gmail.com')
-       ..subject = 'Testing the Dart Mailer library'
-       ..text = 'This is a cool email message. Whats up?'
-       ..html = '<h1>Test</h1><p>Hey!</p>';
-
-     // Email it.
-     emailTransport.send(envelope)
-         .then((envelope) => print('Email sent!'))
-         .catchError((e) => print('Error occurred: $e'));
-     await FirebaseDatabase.instance.reference().child("Users").child(_phoneNo).once().then((DataSnapshot snapshot){
-       user.getDetails(snapshot.value['Name'],snapshot.value['Email'], snapshot.value['DOB'], snapshot.value['Phone'],snapshot.value['Count']);
-       user.uid = _phoneNo;
-       Fluttertoast.showToast(
-         msg: "Login Succesfull!",
-         gravity: ToastGravity.BOTTOM,
-         toastLength: Toast.LENGTH_SHORT,
-         backgroundColor: Colors.black,
-         textColor: Colors.white,
-         fontSize: MediaQuery.of(context).size.width / 30,
-       );
-       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage(user)));
-     }).catchError((e){
-       Fluttertoast.showToast(
-         msg: "No accounts present under this number. Try Again!",
-         gravity: ToastGravity.BOTTOM,
-         toastLength: Toast.LENGTH_SHORT,
-         backgroundColor: Colors.black,
-         textColor: Colors.white,
-         fontSize: MediaQuery.of(context).size.width / 30,
-       );
-     });
-   }
-
-//    final formState = _formkey1.currentState;
-//    if(formState.validate())
-//    {
-//      try {
-//        formState.save();
-////        AuthResult authresult = await FirebaseAuth.instance.signInWithEmailAndPassword(email: _email, password: _password).catchError((e){
-////          Fluttertoast.showToast(
-////            msg: 'Something went wrong! Check your credentials or your network.',
-////            gravity: ToastGravity.BOTTOM,
-////            toastLength: Toast.LENGTH_LONG,
-////            backgroundColor: Colors.black.withOpacity(0.7),
-////            textColor: Colors.white,
-////            fontSize: MediaQuery.of(context).size.width/30,
-////          );
-////        });
-//
-//        if(authresult != null){
-//          Fluttertoast.showToast(
-//            msg: "Please wait! This may take few seconds.",
-//            gravity: ToastGravity.BOTTOM,
-//            toastLength: Toast.LENGTH_SHORT,
-//            backgroundColor: Colors.black,
-//            textColor: Colors.white,
-//            fontSize: MediaQuery.of(context).size.width/30,
-//          );
-//          final FirebaseUser userResult = await FirebaseAuth.instance.currentUser();
-//          user.uid=userResult.uid;
-//          SharedPreferences pref_user = await SharedPreferences.getInstance();
-//          pref_user.setString('userUid', user.uid);
-//          await FirebaseDatabase.instance.reference().child('Users').child(user.uid)
-//              .once().then((DataSnapshot snapshot){
-//            user.getDetails(snapshot.value["Name"], snapshot.value["Email"], snapshot.value["DOB"]);
-//          });
-//          Fluttertoast.showToast(
-//            msg: "Logged in successfully!",
-//            gravity: ToastGravity.BOTTOM,
-//            toastLength: Toast.LENGTH_SHORT,
-//            backgroundColor: Colors.black,
-//            textColor: Colors.white,
-//            fontSize: MediaQuery.of(context).size.width/30,
-//          );
-//        }}catch(e){
-//        print(e);
-//      }
-//      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage(user)) );
-//
-//    }
+    }
   }
 
   @override
@@ -358,6 +300,7 @@ class _LoginState extends State<Login> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             _buildLoginPhone(),
+                            _buildLoginPass(),
                           ],
                         ),
                       )),
